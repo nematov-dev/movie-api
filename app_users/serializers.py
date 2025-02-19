@@ -6,15 +6,10 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("__all__")
-
-class RegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['phone', 'full_name', 'password']
+        fields = ("id","is_user","is_admin","full_name","phone","password")
 
     def create(self, validated_data):
-        """ Yangi foydalanuvchini yaratish va unga OTP kodini berish """
+        """ Yangi foydalanuvchini yaratish """
         otp_code = str(randint(1000, 9999))
         user = User.objects.create(
             phone=validated_data['phone'],

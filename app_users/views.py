@@ -5,12 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import RegisterSerializer, VerifyOTPSerializer, UserSerializer
+from .serializers import VerifyOTPSerializer, UserSerializer
 
 
 class RegisterAPIView(APIView):
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Ro‘yxatdan o‘tish muvaffaqiyatli. OTP yuborildi."}, status=status.HTTP_201_CREATED)
