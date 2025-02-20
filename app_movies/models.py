@@ -15,6 +15,10 @@ class Movie(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Movie"
+        verbose_name_plural = "Movies"
+
 
 class Actor(models.Model):
     gender = (
@@ -29,6 +33,10 @@ class Actor(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Actor"
+        verbose_name_plural = "Actors"
+
 
 class Comment(models.Model):
     movie_id = models.ForeignKey(Movie, on_delete=models.CASCADE)
@@ -38,3 +46,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text
+
+    class Meta:
+        verbose_name = "Comment"
+        verbose_name_plural = "Comments"

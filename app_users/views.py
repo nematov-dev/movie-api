@@ -11,7 +11,7 @@ from rest_framework import status
 from yaml import serialize
 
 from .models import User
-from .serializers import VerifyOTPSerializer, UserSerializer, PhoneSerializer
+from .serializers import VerifyOTPSerializer, RegisterSerializer, PhoneSerializer
 
 
 class PhoneAPIView(APIView):
@@ -26,11 +26,14 @@ class PhoneAPIView(APIView):
 
             cache.set(phone,otp_code, timeout=600)
 
-            response = dict()
-            response['success'] = True
-            response["detail"] = "Sizga kod yuborildi."
+            # response = dict()
+            # response['success'] = True
+            # response["detail"] = "Sizga kod yuborildi."
 
-            return Response(response, status=status.HTTP_201_CREATED)
+            return Response(
+                {"success":True,"detail":"Sizga kod yuborildi!"},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyOTPAPIView(APIView):
@@ -41,55 +44,50 @@ class VerifyOTPAPIView(APIView):
                 phone = serializer.validated_data['phone']
                 verification_code = serializer.validated_data['verification_code']
                 cached_otp = cache.get(phone)
-                response = dict()
-                response['success'] = True
 
                 if str(cached_otp) == str(verification_code):
-                    response['detail'] = "OTP tasdiqlandi. Endi ro'yxatdan o'tishingiz mumkin."
 
                     return Response(
-                        response,
+                        {"success":True,"detail":"OTP tasdiqlandi. Endi ro'yxatdan o'tishingiz mumkin."},
                         status=status.HTTP_200_OK
                     )
-                response['success'] = False
-                response['detail'] = "Noto‘g‘ri yoki eskirgan OTP kod."
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+                return Response(
+                    {"success":False,"detail":"Noto‘g‘ri raqam yoki eskirgan OTP kod."},
+                     status=status.HTTP_400_BAD_REQUEST
+                )
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterAPIView(APIView):
-    @swagger_auto_schema(request_body=UserSerializer)
+    @swagger_auto_schema(request_body=RegisterSerializer)
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
 
-            response = dict()
-            response['success'] = True
-            response["detail"] = "Ro‘yxatdan o‘tish muvaffaqiyatli amalga oshirldi!"
-
-            return Response(response, status=status.HTTP_201_CREATED)
+            return Response(
+            {"success":True,"detail":"Ro'yxatdan o'tish muaffaqiyatli amalga oshirildi!"},
+                 status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = RegisterSerializer(request.user)
 
-        response = dict()
-        response['success'] = True
-        response['data'] = serializer.data
-
-        return Response(response,status=status.HTTP_200_OK)
+        return Response(
+            {"success":True,"data":serializer.data},
+            status=status.HTTP_200_OK
+        )
 
     def patch(self, request):
-        serializer = UserSerializer(request.user, data=request.data)
+        serializer = RegisterSerializer(request.user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-
-            response = dict()
-            response['success'] = True
-            response['data'] = serializer.data
-
-            return Response(response, status=status.HTTP_201_CREATEDOK)
+            return Response(
+                {"success":True,"data":serializer.data},
+                status=status.HTTP_201_CREATEDOK
+            )
