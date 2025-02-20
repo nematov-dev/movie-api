@@ -30,7 +30,6 @@ class User(AbstractBaseUser, PermissionsMixin):
                                  message="Phone number must be entered in the format: '9989012345678'. Up to 14 digits allowed.")
     phone = models.CharField(validators=[phone_regex], max_length=17, unique=True)
     full_name = models.CharField(max_length=50, null=True, blank=True)
-    otp = models.CharField(max_length=6, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_admin = models.BooleanField(default=False)
