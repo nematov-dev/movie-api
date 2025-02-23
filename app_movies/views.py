@@ -1,9 +1,11 @@
-from django.shortcuts import render, get_object_or_404
-from rest_framework import generics
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from app_movies.models import Movie, Actor, Comment
-from app_movies.permissions import IsAdminOrReadOnly, IsAdminOwnerOrReadOnly
+from app_movies.permissions import IsAdminOrReadOnly
 from app_movies.serializers import MovieSerializer, ActorSerializer, CommentSerializer
 
 
@@ -26,21 +28,30 @@ class ActorDetail(generics.RetrieveUpdateDestroyAPIView):
      queryset = Actor.objects.all()
      serializer_class = ActorSerializer
 
-class CommentList(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = CommentSerializer
 
-    def get_queryset(self):
-        movie_id = self.kwargs.get('movie_id')
-        return Comment.objects.filter(movie_id=movie_id)
+class CommentListApiView(APIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, movie_id):
+        comments = Comment.objects.filter(movie__id=movie_id)
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(request_body=CommentSerializer)
+    def post(self, request, movie_id):
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            movie = Movie.objects.get(id=movie_id)
+            serializer.save(user=request.user, movie=movie)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
-     permission_classes = [IsAdminOwnerOrReadOnly,IsAuthenticated]
+     permission_classes = [IsAdminOrReadOnly,IsAuthenticated]
      serializer_class = CommentSerializer
 
      def get_queryset(self):
-         movie_id = self.kwargs.get('movie_id')
          comment_id = self.kwargs.get('pk')
-
-         return Comment.objects.filter(id=comment_id,movie_id=movie_id)
+         return Comment.objects.filter(id=comment_id)
 

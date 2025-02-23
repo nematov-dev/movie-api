@@ -24,11 +24,7 @@ class PhoneAPIView(APIView):
             otp_code = str(randint(1000, 9999))
             print("Yaratilgan OTP:", otp_code)
 
-            cache.set(phone,otp_code, timeout=600)
-
-            # response = dict()
-            # response['success'] = True
-            # response["detail"] = "Sizga kod yuborildi."
+            cache.set(phone, {"otp": otp_code, "phone_number": phone}, timeout=900)
 
             return Response(
                 {"success":True,"detail":"Sizga kod yuborildi!"},
@@ -45,7 +41,7 @@ class VerifyOTPAPIView(APIView):
                 verification_code = serializer.validated_data['verification_code']
                 cached_otp = cache.get(phone)
 
-                if str(cached_otp) == str(verification_code):
+                if str(cached_otp.get("otp")) == str(verification_code):
 
                     return Response(
                         {"success":True,"detail":"OTP tasdiqlandi. Endi ro'yxatdan o'tishingiz mumkin."},
@@ -65,12 +61,25 @@ class RegisterAPIView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
 
-            return Response(
-            {"success":True,"detail":"Ro'yxatdan o'tish muaffaqiyatli amalga oshirildi!"},
-                 status=status.HTTP_201_CREATED
-            )
+            phone = serializer.validated_data['phone']
+            cached_data = cache.get(phone)
+
+            if not cached_data:
+                return Response(
+                    {"success": False, "detail": "Telefon raqamingiz tasdiqlangan raqamga mos emas!"}
+                )
+
+            phone_number = cached_data.get("phone_number")
+
+            if str(phone_number) == str(phone):
+                serializer.save()
+                return Response(
+                    {"success": True, "detail": "Ro'yxatdan o'tish muvaffaqiyatli amalga oshirildi!"},
+                    status=status.HTTP_201_CREATED
+                )
+
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ProfileAPIView(APIView):

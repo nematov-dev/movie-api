@@ -1,7 +1,7 @@
 from django.urls import path
 
 from app_movies import views
-from app_movies.views import CommentList, CommentDetail
+from app_movies.views import CommentDetail, CommentListApiView
 
 app_name = 'movies'
 
@@ -12,6 +12,6 @@ urlpatterns = [
     path("actor/",views.ActorList.as_view(),name="actor_list"),
     path("actor/<int:pk>/",views.ActorDetail.as_view(),name="actor_detail"),
 
-    path('<int:movie_id>/comments/', CommentList.as_view(), name='movie-comments-list'),
-    path('<int:movie_id>/comments/<int:pk>/', CommentDetail.as_view(), name='movie-comments-detail'),
+    path('<int:movie_id>/comments/', CommentListApiView.as_view(), name='movie-comments-list'),
+    path('comments/<int:pk>/', CommentDetail.as_view(), name='movie-comments-detail'),
 ]

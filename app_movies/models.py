@@ -39,8 +39,8 @@ class Actor(models.Model):
 
 
 class Comment(models.Model):
-    movie_id = models.ForeignKey(Movie, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
     create_date = models.DateField(auto_now_add=True)
 
