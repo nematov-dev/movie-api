@@ -8,10 +8,11 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from yaml import serialize
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from .models import User
-from .serializers import VerifyOTPSerializer, RegisterSerializer, PhoneSerializer
+from .serializers import VerifyOTPSerializer, RegisterSerializer, PhoneSerializer, LoginSerializer
 
 
 class PhoneAPIView(APIView):
@@ -82,11 +83,29 @@ class RegisterAPIView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LoginAPIView(APIView):
+    @swagger_auto_schema(request_body=LoginSerializer)
+    def post(self, request):
+        phone = request.data.get("phone")
+        password = request.data.get("password")
+
+        user = User.objects.filter(phone=phone).first()
+
+        if user and user.check_password(password):
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "is_admin": user.is_admin,
+                "is_user": user.is_user,
+                "is_staff": user.is_staff,
+            })
+        return Response({"error": "Phone yoki parol noto‘g‘ri"}, status=status.HTTP_401_UNAUTHORIZED)
+
 class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         serializer = RegisterSerializer(request.user)
-
         return Response(
             {"success":True,"data":serializer.data},
             status=status.HTTP_200_OK

@@ -41,6 +41,12 @@ class VerifyOTPSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=15)
     verification_code = serializers.CharField(max_length=4)
 
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("phone","password")
+
+
 
 
 
