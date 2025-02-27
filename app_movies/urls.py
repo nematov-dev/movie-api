@@ -10,9 +10,6 @@ app_name = 'movies'
 router = DefaultRouter()
 router.register(r'movies', MovieViewSet)
 
-urlpatterns = [
-    path('', include(router.urls)),
-]
 
 urlpatterns = [
     path("",views.MovieList.as_view(),name="movie_list"),
