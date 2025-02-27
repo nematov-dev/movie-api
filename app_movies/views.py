@@ -1,5 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,11 +9,28 @@ from app_movies.models import Movie, Actor, Comment
 from app_movies.permissions import IsAdminOrReadOnly
 from app_movies.serializers import MovieSerializer, ActorSerializer, CommentSerializer
 
+# Viewset
+class MovieViewSet(viewsets.ModelViewSet):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
+    @action(detail=True, methods=['post'])
+    def add_actor(self, request, pk=None):
+        movie = self.get_object()
+        actor_id = request.data.get('actor_id')
+
+        try:
+            actor = Actor.objects.get(id=actor_id)
+            movie.actors.add(actor)
+            return Response({'status': 'actor added'})
+        except Actor.DoesNotExist:
+            return Response({'status': 'actor not found'}, status=404)
 
 class MovieList(generics.ListCreateAPIView):
     permission_classes = [IsAdminOrReadOnly]
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
+
 class MovieDetail(generics.RetrieveUpdateDestroyAPIView):
      permission_classes = [IsAdminOrReadOnly]
      queryset = Movie.objects.all()
